@@ -52,5 +52,4 @@ public class UserController {
         log.info("Пользователь обновлен: {}", existing);
         return existing;
     }
-
 }

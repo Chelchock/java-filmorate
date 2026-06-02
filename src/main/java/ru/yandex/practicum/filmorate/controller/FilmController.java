@@ -30,7 +30,7 @@ public class FilmController {
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
-        validateFilmReleaseDate(film);
+        validateReleaseDate(film);
         film.setId(nextId++);
         films.add(film);
         log.info("Фильм добавлен: {}", film);
@@ -39,7 +39,7 @@ public class FilmController {
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
-        validateFilmReleaseDate(film);
+        validateReleaseDate(film);
         Film existing = films.stream()
                 .filter(f -> f.getId().equals(film.getId()))
                 .findFirst()
@@ -54,7 +54,7 @@ public class FilmController {
         return existing;
     }
 
-    private void validateFilmReleaseDate(Film film) {
+    private void validateReleaseDate(Film film) {
         if (film.getReleaseDate() != null &&
                 film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             throw new ValidationException("Дата релиза должна быть не позднее 28 декабря 1895 года");
