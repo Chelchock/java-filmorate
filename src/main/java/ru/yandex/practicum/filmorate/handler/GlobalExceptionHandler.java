@@ -7,16 +7,23 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
+import java.util.Map;
+import java.util.HashMap;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<String> handleValidation(ValidationException ex) {
-        return ResponseEntity.badRequest().body(ex.getMessage());
+    public ResponseEntity<Map<String, String>> handleValidation(ValidationException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<String> handleNotFound(NotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    public ResponseEntity<Map<String, String>> handleNotFound(NotFoundException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 }
