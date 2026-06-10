@@ -9,10 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +28,6 @@ public class FilmController {
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
-        validateReleaseDate(film);
         film.setId(nextId++);
         films.add(film);
         log.info("Фильм добавлен: {}", film);
@@ -39,7 +36,6 @@ public class FilmController {
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
-        validateReleaseDate(film);
         Film existing = films.stream()
                 .filter(f -> f.getId().equals(film.getId()))
                 .findFirst()
@@ -54,10 +50,4 @@ public class FilmController {
         return existing;
     }
 
-    private void validateReleaseDate(Film film) {
-        if (film.getReleaseDate() != null &&
-                film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidationException("Дата релиза должна быть не позднее 28 декабря 1895 года");
-        }
-    }
 }
