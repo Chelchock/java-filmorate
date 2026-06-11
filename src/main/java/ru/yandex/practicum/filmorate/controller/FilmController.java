@@ -3,15 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -43,7 +35,7 @@ public class FilmController {
         return filmService.create(film);
     }
 
-    @PostMapping
+    @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         log.info("Обновление фильма: {}", film);
         return filmService.update(film);
@@ -63,9 +55,9 @@ public class FilmController {
         return filmService.findById(id);
     }
 
-    @GetMapping
+    @GetMapping("/popular")
     public List<Film> getPopular(@RequestParam(required = false) Integer count) {
-        log.info("Получение популярных фильмов, count={} ", count);
+        log.info("Получение популярных фильмов, count={}", count);
         return filmService.getPopular(count);
     }
 }
