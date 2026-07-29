@@ -1,40 +1,31 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.model.EventType;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
-    private final EventService eventService;
 
     public User create(User user) {
-        // Валидация
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            throw new IllegalArgumentException("Электронная почта не может быть пустой и должна содержать символ @");
-        }
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            throw new IllegalArgumentException("Логин не может быть пустым и содержать пробелы");
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
+        validateUser(user);
+        log.debug("Создание пользователя: {}", user);
         return userStorage.create(user);
     }
 
     public User update(User user) {
+        validateUser(user);
+        log.debug("Обновление пользователя: {}", user);
         return userStorage.update(user);
     }
 
@@ -46,20 +37,12 @@ public class UserService {
         return userStorage.findById(id);
     }
 
-    public void delete(Long id) {
-        userStorage.findById(id);
-        userStorage.delete(id);
-        filmStorage.removeUserLikes(id);
-    }
-
     public void addFriend(Long userId, Long friendId) {
         userStorage.addFriend(userId, friendId);
-        eventService.add(userId, EventType.FRIEND, Operation.ADD);
     }
 
     public void removeFriend(Long userId, Long friendId) {
         userStorage.removeFriend(userId, friendId);
-        eventService.add(userId, EventType.FRIEND, Operation.REMOVE);
     }
 
     public List<User> getFriends(Long userId) {
@@ -70,13 +53,15 @@ public class UserService {
         return userStorage.getCommonFriends(userId, otherId);
     }
 
-    public List<Event> getFeed(Long userId) {
-        userStorage.findById(userId);
-        return eventService.findByUserId(userId);
-    }
-
-    public List<Film> getRecommendations(Long userId) {
-        userStorage.findById(userId);
-        return filmStorage.getRecommendations(userId);
+    private void validateUser(User user) {
+        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
+            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
+        }
+        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
+            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
+        }
+        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
+            throw new ValidationException("Дата рождения не может быть в будущем");
+        }
     }
 }
