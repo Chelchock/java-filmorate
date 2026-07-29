@@ -83,7 +83,6 @@ public class UserDbStorage implements UserStorage {
     public void removeFriend(Long userId, Long friendId) {
         findById(userId);
         findById(friendId);
-        // Удаляем запись только с одной стороны, как того требует тест
         jdbcTemplate.update("DELETE FROM friendships WHERE user_id = ? AND friend_id = ?", userId, friendId);
     }
 
