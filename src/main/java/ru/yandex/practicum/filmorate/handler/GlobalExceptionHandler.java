@@ -7,53 +7,52 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.filmorate.exception.ApiErrorResponse;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ValidationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiErrorResponse handleValidation(ValidationException ex) {
-        log.warn("Ошибка валидации: {}", ex.getMessage());
-        return new ApiErrorResponse(ex.getMessage());
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiErrorResponse handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        String errorMessage = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(FieldError::getDefaultMessage)
-                .collect(Collectors.joining("; "));
-        log.warn("Ошибка валидации аргументов: {}", errorMessage);
-        return new ApiErrorResponse(errorMessage);
+    public Map<String, String> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return errors;
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiErrorResponse handleIllegalArgument(IllegalArgumentException ex) {
-        log.warn("Некорректный аргумент: {}", ex.getMessage());
-        return new ApiErrorResponse(ex.getMessage());
+    public Map<String, String> handleValidation(ValidationException ex) {
+        log.warn("Validation error: {}", ex.getMessage());
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return error;
     }
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiErrorResponse handleNotFound(NotFoundException ex) {
-        log.warn("Ресурс не найден: {}", ex.getMessage());
-        return new ApiErrorResponse(ex.getMessage());
+    public Map<String, String> handleNotFound(NotFoundException ex) {
+        log.warn("Not found: {}", ex.getMessage());
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return error;
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiErrorResponse handleGeneric(Exception ex) {
-        log.error("Непредвиденная ошибка", ex);
-        return new ApiErrorResponse("Произошла непредвиденная ошибка.");
+    public Map<String, String> handleGeneric(Exception ex) {
+        log.error("Internal error", ex);
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Произошла непредвиденная ошибка");
+        return error;
     }
 }
