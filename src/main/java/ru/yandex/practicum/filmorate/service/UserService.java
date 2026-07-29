@@ -2,7 +2,12 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
@@ -12,6 +17,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
+    private final EventService eventService;
 
     public User create(User user) {
         // Валидация
@@ -39,12 +46,20 @@ public class UserService {
         return userStorage.findById(id);
     }
 
+    public void delete(Long id) {
+        userStorage.findById(id);
+        userStorage.delete(id);
+        filmStorage.removeUserLikes(id);
+    }
+
     public void addFriend(Long userId, Long friendId) {
         userStorage.addFriend(userId, friendId);
+        eventService.add(userId, EventType.FRIEND, Operation.ADD);
     }
 
     public void removeFriend(Long userId, Long friendId) {
         userStorage.removeFriend(userId, friendId);
+        eventService.add(userId, EventType.FRIEND, Operation.REMOVE);
     }
 
     public List<User> getFriends(Long userId) {
@@ -53,5 +68,15 @@ public class UserService {
 
     public List<User> getCommonFriends(Long userId, Long otherId) {
         return userStorage.getCommonFriends(userId, otherId);
+    }
+
+    public List<Event> getFeed(Long userId) {
+        userStorage.findById(userId);
+        return eventService.findByUserId(userId);
+    }
+
+    public List<Film> getRecommendations(Long userId) {
+        userStorage.findById(userId);
+        return filmStorage.getRecommendations(userId);
     }
 }

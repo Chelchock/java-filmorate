@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import ru.yandex.practicum.filmorate.validation.ValidReleaseDate;
 
 @Data
@@ -24,4 +26,10 @@ public class Film {
 
     @Min(value = 1, message = "Продолжительность должна быть положительным числом")
     private Integer duration;
+
+    private List<Genre> genres = new ArrayList<>();
+
+    private List<Director> directors = new ArrayList<>();
+
+    private Double rating = 0.0;
 }
