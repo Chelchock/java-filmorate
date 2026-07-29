@@ -67,8 +67,6 @@ public class InMemoryUserStorage implements UserStorage {
     public void addFriend(Long userId, Long friendId) {
         findById(userId);
         findById(friendId);
-
-        // ✅ Добавляем друга ТОЛЬКО в одну сторону (односторонняя дружба)
         friends.get(userId).add(friendId);
     }
 
@@ -77,8 +75,7 @@ public class InMemoryUserStorage implements UserStorage {
         findById(userId);
         findById(friendId);
         friends.get(userId).remove(friendId);
-        friends.get(friendId).remove(userId); // ✅ Чистим и обратную связь на всякий случай
-    }
+}
 
     @Override
     public List<User> getFriends(Long userId) {
